@@ -5,4 +5,4 @@ Projeto template reactjs + express
 `yarn server`
 
 # executar reactjs
-`yarn start`
+`yarn start` 
