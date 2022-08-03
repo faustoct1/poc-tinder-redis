@@ -30,9 +30,15 @@ app.use(cors({origin:'*'}))
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended:true}))
 
-const setup = async () => {
+const setup = async (forceFlush) => {
   await execute(async (client)=>{
-    await client.flushAll() //clear all database
+    const done = Boolean( await client.get('setup') )
+
+    if(!done || forceFlush){
+      await client.flushAll() //clear all database
+      await client.set('setup','true')
+    }
+
     //create users
     await Promise.all([
       client.set('me',JSON.stringify({id:'me',name:'Joker Nomade',twitter:'@jokernomade',description:'Criador do pirulito de carne',thumb:'https://pbs.twimg.com/profile_images/1542765692788809728/d7YbqPEE_400x400.jpg'})),
@@ -52,10 +58,10 @@ const setup = async () => {
 }
 
 const lookup = async (uid,coords) => {
-  const key = `matchusers_${uid}_feed`
+  const key = `feed_${uid}`
   return await execute(async (client)=>{
-    await client.geoSearchStore(key,'feed',{latitude:coords.lat,longitude:coords.lon},{radius: 50000, unit: 'km'})
-    await client.zDiffStore(key,[key,`userlikes_${uid}`])
+    console.log(await client.geoSearchStore(key,'feed',{latitude:coords.lat,longitude:coords.lon},{radius: 50000, unit: 'km'}))
+    console.log(await client.zDiffStore(key,[key,`usersmatch_${uid}`]))
     return await client.zRange(key, 0, -1)
   })
 }
@@ -66,19 +72,37 @@ const getUsers = async (ids) => {
   })
 }
 
-app.get('/setup', async (req, res, next) => {
-  await setup()
+const init = async (res,force) => {
+  await setup(!!force)
   const userIds = await lookup('me',{ lat: 37.4418834, lon: -122.1430195 })
-  const users = await getUsers(userIds)
+  const users = userIds && userIds.length ? await getUsers(userIds) : []
   res.json({isOn:true, users:users.map(u=>JSON.parse(u))})
+}
+
+app.get('/start', async (req, res, next) => {
+  init(res,false)
+})
+
+app.post('/clean', async (req, res, next) => {
+  init(res,true)
 })
 
 app.post('/action/dislike/:id', async (req, res, next) => {
-  console.log(req.params.id)
+  const id = req.params.id
+  const uid = 'me'
+  await execute(async (client)=>{
+    await client.zAdd(`usersmatch_${uid}`,{score:1, value:id},{INCR:true})
+    await client.zAdd(`usersdislike_${uid}`,{score:1, value:id},{INCR:true})
+  })
 })
 
 app.post('/action/like/:id', async (req, res, next) => {
-  console.log(req.params.id)
+  const id = req.params.id
+  const uid = 'me'
+  await execute(async (client)=>{
+    await client.zAdd(`usersmatch_${uid}`,{score:1, value:id},{INCR:true})
+    await client.zAdd(`userslike_${uid}`,{score:1, value:id},{INCR:true})
+  })
 })
 
 
