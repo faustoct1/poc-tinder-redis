@@ -35,6 +35,9 @@ para os seguinte cenários:
 # Screenshots
 <img width="1440" alt="Screen Shot 2022-08-04 at 00 00 36" src="https://user-images.githubusercontent.com/3135444/182753805-c5ed4623-ad72-42c0-92ea-327b2d4b58e3.png">
 
+# REDIS CONFIG
+Você pode substituir URL do redis ou usar a URL compartilhada desse projeto
+
 # executar servidor
 `yarn server`
 
