@@ -136,16 +136,19 @@ const App = () => {
           }
           
         </p>
-        {renderCards()}
+        {loading ? null : renderCards()}
         </Col>
       </Row>
-      <Row className="align-items-center justify-content-center">
-        <Col xxl={6} xl={6} lg={8} md={8} sm={12} xs={12} className="align-items-center justify-content-center" style={{marginTop:50}}>
-          <div>
-            <Button variant="link" onClick={(e)=>{clear(e)}}>Limpar REDIS</Button>
-          </div>       
-        </Col>
-      </Row>
+      {
+        loading ? null : 
+        <Row className="align-items-center justify-content-center">
+          <Col xxl={6} xl={6} lg={8} md={8} sm={12} xs={12} className="align-items-center justify-content-center" style={{marginTop:50}}>
+            <div>
+              <Button variant="link" onClick={(e)=>{clear(e)}} style={{borderWidth:1,borderColor:'blue',borderRadius:5}}>Limpar REDIS</Button>
+            </div>       
+          </Col>
+        </Row>
+      }
     </Container>
     
   );
