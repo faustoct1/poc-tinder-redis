@@ -7,6 +7,7 @@ const App = () => {
   const [loading,setLoading] = useState(true)
   const [isOn,setIsOn] = useState(false)
   const [users,setUsers] = useState(null)
+  const [reactions,setReactions] = useState([])
 
   const initAsync = async () => {
     try{
@@ -19,6 +20,7 @@ const App = () => {
       const json = await response.json()
       setIsOn(json.isOn)
       setUsers(json.users)
+      setReactions([...json.reactions])
       setLoading(false)
     }catch(e){
       setIsOn(false)
@@ -37,6 +39,10 @@ const App = () => {
     e.preventDefault()
     users.splice(0,1)
     setUsers([...users])
+
+    user.type='dislike'
+    setReactions([...reactions,...[user]])
+
     fetch(`http://localhost:5000/action/dislike/${user.id}`,{ 
       method: 'POST',
       headers: {
@@ -51,6 +57,10 @@ const App = () => {
     e.preventDefault()
     users.splice(0,1)
     setUsers([...users])
+
+    user.type='like'
+    setReactions([...reactions,...[user]])
+
     fetch(`http://localhost:5000/action/like/${user.id}`,{ 
       method: 'POST',
       headers: {
@@ -73,13 +83,14 @@ const App = () => {
       const json = await response.json()
       setIsOn(decodeURI(json.isOn))
       setUsers(json.users)
+      setReactions([])
       setLoading(false)
     })()
   }
 
   const renderCards = () => {
     return (
-      <div class="align-items-center justify-content-center" style={{display: 'flex', justifyContent: 'center'}}>
+      <div className="align-items-center justify-content-center" style={{display: 'flex', justifyContent: 'center'}}>
         {
           users && users.length>0 ? 
           <Card style={{ width: '100%', borderWidth:0 }}>
@@ -113,10 +124,20 @@ const App = () => {
           )
         } 
       </div>
-
     )
   }
 
+  const renderReactions = () => {
+    return (
+      <div className="align-items-center justify-content-center">
+        {
+          reactions && reactions.map(u=>{
+            return <div key={u.id}>{u.name} ({u.type})</div>
+          })
+        } 
+      </div>
+    )
+  }
 
   return (
     <Container>
@@ -148,6 +169,15 @@ const App = () => {
             </div>       
           </Col>
         </Row>
+      }
+      {
+        loading ? null : 
+        <Row className="align-items-center justify-content-center">
+          <Col xxl={6} xl={6} lg={8} md={8} sm={12} xs={12} className="align-items-center justify-content-center" style={{marginTop:10}}>
+            {renderReactions()}
+          </Col>
+        </Row>
+        
       }
     </Container>
     

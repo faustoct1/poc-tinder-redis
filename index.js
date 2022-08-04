@@ -9,6 +9,7 @@ const URL = 'redis://default:k2GI1SsHjPYt5EBNwPNftllCE8AcdIK6@redis-12093.c279.u
 
 const execute = async (callback) => {
   if(!callback) return null
+  let client = null
   try{
     client = createClient({ url: URL })
     await client.connect()
@@ -18,7 +19,6 @@ const execute = async (callback) => {
   }finally{
     if(client)client.quit()
   }
-  
 }
 
 const logErrors = (err, req, res, next) => {
@@ -60,23 +60,55 @@ const setup = async (forceFlush) => {
 const lookup = async (uid,coords) => {
   const key = `feed_${uid}`
   return await execute(async (client)=>{
-    console.log(await client.geoSearchStore(key,'feed',{latitude:coords.lat,longitude:coords.lon},{radius: 50000, unit: 'km'}))
-    console.log(await client.zDiffStore(key,[key,`usersmatch_${uid}`]))
+    await client.geoSearchStore(key,'feed',{latitude:coords.lat,longitude:coords.lon},{radius: 50000, unit: 'km'})
+    await client.zDiffStore(key,[key,`usersmatch_${uid}`])
     return await client.zRange(key, 0, -1)
   })
 }
 
-const getUsers = async (ids) => {
-  return await execute(async (client)=>{
+const getUsers = async () => {
+  const ids = await lookup('me',{ lat: 37.4418834, lon: -122.1430195 })
+  const users = ids && ids.length ? await execute(async (client)=>{
     return await client.mGet(ids)
+  }) : []
+  return users && users.length ? users.map(u=>JSON.parse(u)) : []
+}
+
+const getDislikes = async () => {
+  return await execute(async (client)=>{
+    const ids = await client.zRange('usersdislike_me', 0, -1)
+    return ids && ids.length ? await client.mGet(ids) : []
+  })
+}
+
+const getLikes = async () => {
+  return await execute(async (client)=>{
+    const ids = await client.zRange('userslike_me', 0, -1)
+    return ids && ids.length ? await client.mGet(ids) : []
   })
 }
 
 const init = async (res,force) => {
   await setup(!!force)
-  const userIds = await lookup('me',{ lat: 37.4418834, lon: -122.1430195 })
-  const users = userIds && userIds.length ? await getUsers(userIds) : []
-  res.json({isOn:true, users:users.map(u=>JSON.parse(u))})
+  const dislikes = await getDislikes()
+  const likes = await getLikes()
+  const users = await getUsers()
+  res.json({
+    isOn:true, 
+    users:users, 
+    reactions: [
+      ...likes.map(u=>{
+        u = JSON.parse(u)
+        u.type='like';
+        return u
+      }),
+      ...dislikes.map(u=>{
+        u = JSON.parse(u)
+        u.type='dislike';
+        return u
+      })
+    ].sort()
+  })
 }
 
 app.get('/start', async (req, res, next) => {
