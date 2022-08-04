@@ -33,7 +33,8 @@ para os seguinte cenários:
   - `zAdd('usersdislike_me',{score:1, value:id},{INCR:true})` Adiciona ao feed de dislike do usuário
  
 # Screenshots
-<img width="1440" alt="Screen Shot 2022-08-04 at 00 00 36" src="https://user-images.githubusercontent.com/3135444/182753805-c5ed4623-ad72-42c0-92ea-327b2d4b58e3.png">
+<img width="1440" alt="Screen Shot 2022-08-04 at 00 05 17" src="https://user-images.githubusercontent.com/3135444/182754324-d8e2e5c1-c1a3-43c0-a959-b2cd5ce49750.png">
+
 
 # REDIS CONFIG
 Você pode substituir URL do redis ou usar a URL compartilhada desse projeto
