@@ -32,6 +32,8 @@ para os seguinte cenários:
   - `zAdd('usersmatch_me',{score:1, value:id},{INCR:true})` Adiciona ao feed de iteração do usuario
   - `zAdd('usersdislike_me',{score:1, value:id},{INCR:true})` Adiciona ao feed de dislike do usuário
  
+# Screenshots
+<img width="1440" alt="Screen Shot 2022-08-04 at 00 00 36" src="https://user-images.githubusercontent.com/3135444/182753805-c5ed4623-ad72-42c0-92ea-327b2d4b58e3.png">
 
 # executar servidor
 `yarn server`
