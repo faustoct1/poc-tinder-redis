@@ -37,11 +37,12 @@ const App = () => {
   const dislike = async (e,user) => {
     e.stopPropagation()
     e.preventDefault()
-    users.splice(0,1)
-    setUsers([...users])
 
     user.type='dislike'
     setReactions([...reactions,...[user]])
+
+    users.splice(0,1)
+    setUsers([...users])
 
     fetch(`http://localhost:5000/action/dislike/${user.id}`,{ 
       method: 'POST',
@@ -55,11 +56,12 @@ const App = () => {
   const like = async (e,user) => {
     e.stopPropagation()
     e.preventDefault()
-    users.splice(0,1)
-    setUsers([...users])
 
     user.type='like'
     setReactions([...reactions,...[user]])
+
+    users.splice(0,1)
+    setUsers([...users])
 
     fetch(`http://localhost:5000/action/like/${user.id}`,{ 
       method: 'POST',
